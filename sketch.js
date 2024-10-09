@@ -1,16 +1,17 @@
 function setup() {
-    createCanvas(windowWidth, windowHeight - 40);
+  createCanvas(windowWidth, windowHeight);
 
-    initializePlanets();
+  initializePlanets();
 
-    var button = createButton("Restart");
-    button.mousePressed(initializePlanets);
+  button = createButton("Restart");
+  button.mousePressed(initializePlanets);
+  button.position(20, 10);
 }
 
 function draw() {
-  background(242, 238, 203);
+  background(242, 238, 203, 70);
 
-  updateDynamic(planets);
+  updateDynamic(type = "simplectic_euler");
 
   // Representing attraction towards the center
   show_center_attraction = false;
@@ -24,7 +25,7 @@ function draw() {
   strokeWeight(4);
   fill(255, 153, 61);
   for (planet of planets) {
-    circle(planet.pos.x, planet.pos.y, 20);
+    circle(planet.pos.x, planet.pos.y, 20 * Math.cbrt(planet.mass));
   }
 
   stroke(255, 0, 0);

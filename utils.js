@@ -1,4 +1,5 @@
-let G = 100;
+let G = 3;
+let NUM_PLANETS = 3;
 
 class Planet {
   constructor(pos = null, v = null, a = null, mass = 1) {
@@ -32,36 +33,59 @@ class Planet {
 
 function initializePlanets() {
   planets = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < NUM_PLANETS; i++) {
     planets.push(new Planet());
   }
 }
 
-function updateAcceleration(planet) {
+function calculateAcceleration(planet) {
+  planet.a = createVector(); // Reset acceleration each iteration
+
   for (other of planets) {
     if (planet == other) {
       continue;
     }
     dir_vec = p5.Vector.sub(other.pos, planet.pos);
-    scale = dir_vec.mag() ** 2;
+    scale = dir_vec.mag() ; // This should be magSq but it looks better this way
+    if (scale < 20) { scale = 20; } // Avoid division by small numer
     dir_vec.normalize();
     component = dir_vec.mult(G * other.mass / scale);
     planet.a = planet.a.add(component);
   }
 }
 
-function updatePosition(planet) {
-    planet.a.setMag(0.02);
+function updatePosition(planet, type = "simplectic_euler") {
+  if (type == "simplectic_euler") {
+    // simplectic Euler
+    // v_{n+1} = v_n + a_n
+    // x_{n+1} = x_n + v_{n+1}
     planet.v = planet.v.add(planet.a);
     planet.pos = planet.pos.add(planet.v);
+  }
+  else if (type == "explicit_euler") {
+    // explicit Euler
+    // x_{n+1} = x_n + v_n
+    // v_{n+1} = v_n + a_n
+    planet.pos = planet.pos.add(planet.v);
+    planet.v = planet.v.add(planet.a);
+  }
+  else if (type == "rk4") {
+    // TODO
+    // Runge-Kutta 4
+    // k1 = h * f(t_n, y_n)
+    // k2 = h * f(t_n + h/2, y_n + k1/2)
+    // k3 = h * f(t_n + h/2, y_n + k2/2)
+    // k4 = h * f(t_n + h, y_n + k3)
+    // y_{n+1} = y_n + (k1 + 2*k2 + 2*k3 + k4) / 6
+  }
 }
 
-function updateDynamic(planets) {
+function updateDynamic(type = "explicit_euler") {
   for (planet of planets) {
-    updateAcceleration(planet);
+    calculateAcceleration(planet);
   }
   for (planet of planets) {
-    updatePosition(planet);
+    updatePosition(planet, type);
   }
 }
 
