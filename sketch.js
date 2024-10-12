@@ -1,17 +1,25 @@
+let planets = [];
+
+function keyPressed() {
+    if (key == "s") {
+        saveGif("central_dance", 10);
+    }
+}
+
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(600, 600);
 
-  initializePlanets();
+  initializePlanets(planets, choreo = "central dance");
 
-  button = createButton("Restart");
-  button.mousePressed(initializePlanets);
-  button.position(20, 10);
+  // button = createButton("Restart");
+  // button.mousePressed(initializePlanets);
+  // button.position(20, 10);
 }
 
 function draw() {
-  background(242, 238, 203, 70);
+  background(15, 15, 15, 90);
 
-  updateDynamic(type = "simplectic_euler");
+  updateDynamic(type = "simplectic_euler", planets = planets);
 
   // Representing attraction towards the center
   show_center_attraction = false;
@@ -21,9 +29,10 @@ function draw() {
 
   // Visualizing the planets
   // noStroke();
-  stroke(255, 153, 61);
+  planet_color = color(150, 219, 219);
+  stroke(planet_color);
   strokeWeight(4);
-  fill(255, 153, 61);
+  fill(planet_color);
   for (planet of planets) {
     circle(planet.pos.x, planet.pos.y, 20 * Math.cbrt(planet.mass));
   }
@@ -42,4 +51,5 @@ function draw() {
   for (planet of planets) {
     planet.checkBoundaries();
   }
+  // planets = checkCollisions(planets);
 }
