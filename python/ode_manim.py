@@ -47,24 +47,20 @@ def two_body(t, z):
     return [ 0, vx0, vy0, ax0, ay0,  0, vx1, vy1, ax1, ay1]
 
 
-def sim_three_body(evolution_time: int = 60, method:str ="RK45", step_size_type: str = "adaptive"):
+def sim_three_body(evolution_time: int = 60, method:str ="DOP853", step_size_type: str|None = None):
     t_start = 0
     t_stop = evolution_time
-    dt = 0.01
+    dt = 0.011
     num = int(t_stop / dt)
 
-    m0, m1, m2 = 1, 1, 1
+    m0, m1, m2 = [1], [1], [1]
     pos0 = [-1.5, 0]
-    vel0 = [0, 0.2]
-    pos1 = [0, 0]
-    vel1 = [0, 0]
+    vel0 = [0.2, 0]
+    pos1 = [0, 1]
+    vel1 = [-0.2, -0.2]
     pos2 = [1.5, 0]
-    vel2 = [0, -0.2]
-    y0 = [m0] + pos0 + vel0
-    y0.append(m1)
-    y0 = y0 + pos1 + vel1
-    y0.apend(m2)
-    y0 = y0 + pos2 + vel2
+    vel2 = [-0.2, 0.2]
+    y0 = m0 + pos0 + vel0 + m1 + pos1 + vel1 + m2 + pos2 + vel2
     #    [m0,  x0,  y0, vx0, vy0, m1,  x1,  y1, vx1,   vy1,  m2, x2, y2, vx2,  vy2]
     # y0 = [1,    0,   0,   0,   0,  1,  -2,   0,   0,  0.2,   1,  2,  0,   0, -0.2]
     # y0 = [1, -1.5,   0,   0, 0.2,  1,   0,   0,   0,     0,   1, 1.5,  0,   0,   -0.2]
@@ -77,17 +73,24 @@ def sim_three_body(evolution_time: int = 60, method:str ="RK45", step_size_type:
         bodies = solve_ivp(fun=three_body, t_span=(t_start, t_stop), y0=y0, method="RK45", rtol=1e-5)
 
     else:
-        assert False, "step_size_type must of either 'fix' or 'adaptive'"
+        bodies = solve_ivp(fun=three_body, t_span=(t_start, t_stop), y0=y0, method=method)
 
-    print(f"{method = }, {step_size_type = }, {bodies.y.shape = }")
-    return bodies, bodies.y.shape[-1]
+    print(f"{step_size_type = }, {bodies.y.shape = }")
+    return bodies
 
 def sim_two_body(evolution_time: int = 60):
     t_start = 0
     t_stop = evolution_time
 
+    m0, m1 = [3], [3]
+    pos0 = [-1, 0]
+    vel0 = [0, -0.9]
+    pos1 = [1, 0]
+    vel1 = [0, 0.9]
+
+    y0 = m0 + pos0 + vel0 + m1 + pos1 + vel1
     #    [m0, x0, y0, vx0, vy0, m1, x1, y1, vx1, vy1]
-    y0 = [ 3, -1,  0,   0, -0.9, 3,  1,  0,   0, 0.9]
+    # y0 = [ 3, -1,  0,   0, -0.9, 3,  1,  0,   0, 0.9]
     bodies = solve_ivp(fun=two_body, t_span=(t_start, t_stop), y0=y0, rtol=1e-5)
     print(f"{bodies.y.shape = }")
     return bodies
@@ -115,14 +118,16 @@ class ThreeBodyDiffMethods(Scene):
         evolution_time = 30
 
         # calculate the solution of the differential equation
-        bodies_adaptive, num_points_adaptive = sim_three_body(evolution_time, step_size_type="adaptive")
+        bodies_adaptive = sim_three_body(evolution_time, step_size_type="adaptive")
+        num_points_adaptive = bodies_adaptive.y.shape[-1]
         zeros = np.zeros_like(bodies_adaptive.y[1]).tolist()
         adaptive_points = [
             list(zip(bodies_adaptive.y[1 + i * 5], bodies_adaptive.y[2 + i * 5], zeros))
             for i in range(3)
         ]
 
-        bodies_fix, num_points_fix = sim_three_body(evolution_time, method="RK45", step_size_type="fix")
+        bodies_fix = sim_three_body(evolution_time, method="RK45", step_size_type="fix")
+        num_points_fix = bodies_fix.y.shape[-1]
         zeros = np.zeros_like(bodies_fix.y[1]).tolist()
         fix_points = [
             list(zip(bodies_fix.y[1 + i * 5], bodies_fix.y[2 + i * 5], zeros))
@@ -156,6 +161,8 @@ class ThreeBodyDiffMethods(Scene):
             color=RED
         ).to_corner(UR)
 
+        curves.scale(1.5).move_to(ORIGIN)
+
         # Play the animations
         self.play(Write(adaptive_text), Write(fix_text))
         self.play(
@@ -165,7 +172,46 @@ class ThreeBodyDiffMethods(Scene):
             ),
             run_time=evolution_time
         )
-        self.play(curves.animate.scale(1.5).move_to(ORIGIN))
+        self.wait(3)
+
+
+class ThreeBody(Scene):
+    def construct(self):
+        evolution_time = 30
+
+        # calculate the solution of the differential equation
+        bodies = sim_three_body(evolution_time, step_size_type="fix")
+        zeros = np.zeros_like(bodies.y[1]).tolist()
+        sols = [
+            list(zip(bodies.y[1 + i * 5], bodies.y[2 + i * 5], zeros))
+            for i in range(3)
+        ]
+
+        # create a vector group to cold the curves drawn by the planets
+        curves = VGroup()
+
+        for points in sols:
+            curve = VMobject().set_points_smoothly(points)
+            curve.set_stroke(BLUE)
+            curves.add(curve)
+
+
+        curves.set_stroke(width=2, opacity=1)
+        curves.scale(1.8)
+
+        dots = VGroup()
+        for curve in curves:
+            dot = Dot(color=curve.color)
+            dots.add(dot)
+
+
+        # Play the animations
+        self.play(
+            *(
+                MoveAlongPath(dot, curve) for dot, curve in zip(dots, curves)
+            ),
+            run_time=evolution_time
+        )
         self.wait(3)
 
 
