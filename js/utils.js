@@ -73,20 +73,17 @@ function calculateAcceleration(planet, planets) {
 
 function updatePosition(planet, type = "simplectic_euler") {
   if (type == "simplectic_euler") {
-    // simplectic Euler
     // v_{n+1} = v_n + a_n
     // x_{n+1} = x_n + v_{n+1}
     planet.v = planet.v.add(planet.a);
     planet.pos = planet.pos.add(planet.v);
   } else if (type == "explicit_euler") {
-    // explicit Euler
     // x_{n+1} = x_n + v_n
     // v_{n+1} = v_n + a_n
     planet.pos = planet.pos.add(planet.v);
     planet.v = planet.v.add(planet.a);
   } else if (type == "rk4") {
     // TODO
-    // Runge-Kutta 4
     // k1 = h * f(t_n, y_n)
     // k2 = h * f(t_n + h/2, y_n + k1/2)
     // k3 = h * f(t_n + h/2, y_n + k2/2)
