@@ -1,5 +1,5 @@
 const G = 500;
-const NUM_PLANETS = 3;
+const NUM_PLANETS = 2;
 const dist_tol = 10;
 
 class Planet {

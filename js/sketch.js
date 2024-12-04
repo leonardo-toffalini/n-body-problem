@@ -5,9 +5,13 @@ function keyPressed() {
     if (key == "s") {
         saveGif("central_dance", 10);
     }
+    if (key == " ") {
+        stopTime();
+    }
+    return false;
 }
 
-function butPres() {
+function stopTime() {
     stoppedTime = !stoppedTime;
 }
 
@@ -34,13 +38,9 @@ function setup() {
 
   initializePlanets(planets, choreo = "random");
 
-  // button = createButton("Restart");
-  // button.mousePressed(initializePlanets(planets, choreo = "random"));
-  // button.position(20, 10);
-
   button = createButton("Stop Time");
-  button.mousePressed(butPres);
-  button.position(20, 40);
+  button.mousePressed(stopTime);
+  button.position(20, 20);
 }
 
 function draw() {
@@ -49,8 +49,8 @@ function draw() {
   textAlign(CENTER);
   textStyle(BOLD);
   stroke(0);
-  fill(255);
-  text("Click on the screen to add a planet, or click on an existing planet to remove it.", windowWidth/2, 20);
+  fill(230);
+  text("Click on the screen to add a planet, or click on an existing planet to remove it.", windowWidth/2, 35);
 
   if (!stoppedTime) {
     updateDynamic(type = "simplectic_euler", planets = planets);
