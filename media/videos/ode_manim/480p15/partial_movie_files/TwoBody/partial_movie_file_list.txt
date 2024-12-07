@@ -1,4 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/Users/leonardotoffalini/Downloads/git/personal/n-body-sim/media/videos/ode_manim/480p15/partial_movie_files/TwoBody/1185818338_4001856710_223132457.mp4'
-file 'file:/Users/leonardotoffalini/Downloads/git/personal/n-body-sim/media/videos/ode_manim/480p15/partial_movie_files/TwoBody/624642324_3789166243_2201705981.mp4'
-file 'file:/Users/leonardotoffalini/Downloads/git/personal/n-body-sim/media/videos/ode_manim/480p15/partial_movie_files/TwoBody/624642324_2475379470_3545148394.mp4'
