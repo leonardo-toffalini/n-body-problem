@@ -1,6 +1,6 @@
 const G = 500;
 const NUM_PLANETS = 2;
-const dist_tol = 10;
+const dist_tol = 20;
 
 class Planet {
   constructor(pos = null, v = null, a = null, mass = 1) {
@@ -11,11 +11,15 @@ class Planet {
     }
     if (v == null) {
       this.v = createVector(random(-1, 1), random(-1, 1));
+    } else if (!(v instanceof p5.Vector)) {
+      this.v = createVector(v.x, v.y);
     } else {
       this.v = v;
     }
     if (a == null) {
       this.a = createVector();
+    } else if (!(a instanceof p5.Vector)) {
+      this.a = createVector(a.x, a.y);
     } else {
       this.a = a;
     }
@@ -102,18 +106,18 @@ function updateDynamic(type = "explicit_euler", planets) {
 }
 
 function checkCollisions(planets) {
-  for (planet of planets) {
-    for (other of planets) {
-      if (planet == other) { continue; }
-      if (planet.pos.dist(other.pos) < dist_tol) {
-        // Collision detected
-        console.log("Collision detected");
+  for (let i = 0; i < planets.length; i++) {
+    for (let j = i + 1; j < planets.length; j++) {
+      let planet = planets[i];
+      let other = planets[j];
+      if (planet.pos.dist(other.pos) < 10 * Math.cbrt(max(planet.mass, other.mass))) {
         combined_pos = p5.Vector.add(planet.pos, other.pos).div(2);
         combined_mass = planet.mass + other.mass;
-        planets.splice(planets.indexOf(planet), 1);
-        planets.splice(planets.indexOf(other), 1);
-        planets.push(new Planet(combined_pos, mass = combined_mass))
-        console.log(planets);
+        planets.splice(j, 1);
+        planets.splice(i, 1);
+        planets.push(new Planet(combined_pos, createVector(), createVector(), combined_mass));
+        i--;
+        break;
       }
     }
   }
@@ -135,6 +139,29 @@ function showCenterAttraction(planets) {
         planet.pos.y,
         x_center,
         y_center
-      );
+    );
+  }
+}
+
+function getKineticEnergy(planets) {
+  let energy = 0;
+  for (planet of planets) {
+    energy += 0.5 * planet.mass * max(planet.v.magSq(), 0.01);
+  }
+  return energy;
+}
+
+function getPotentialEnergy(planets) {
+  let energy = 0;
+  for (planet of planets) {
+    for (other of planets) {
+      if (planet == other) { continue; }
+      energy += - planet.mass * other.mass / planet.pos.dist(other.pos);
     }
+  }
+  return energy;
+}
+
+function getEnergy(planets) {
+  return getKineticEnergy(planets) + getPotentialEnergy(planets);
 }
